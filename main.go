@@ -135,7 +135,7 @@ func currently_playing(w http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
-	SetEnvironmentVariables()
+	// SetEnvironmentVariables()
 	fmt.Println("currently-playing")
 	http.HandleFunc("/currently-playing", currently_playing)
 	http.ListenAndServe(":8080", nil)

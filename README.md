@@ -26,6 +26,8 @@ get the currently playing song from Spotify
 
   Find more about how to get these on [Spotify OAuth Documentation](https://developer.spotify.com/documentation/web-api/tutorials/code-flow)
 
+- Uncomment `SetEnvironmentVariables()` in `main.go`
+
 - Run `go run .` to start the application
 
 - Running `curl http://localhost:8080/currently-playing` will return if something is playing
