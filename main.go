@@ -101,8 +101,9 @@ func currently_playing(w http.ResponseWriter, req *http.Request) {
 	}
 	var nowPlaying NowPlaying
 	if err := json.Unmarshal(body, &nowPlaying); err != nil {
-		// fmt.Printf("Failed parse response body: %v\n", err)
-		http.Error(w, "Failed to parse response body", http.StatusInternalServerError)
+		fmt.Printf("Failed parse response body: %v\n", err)
+		// http.Error(w, "Failed to parse response body", http.StatusInternalServerError)
+
 		return
 	}
 	var artists strings.Builder
@@ -115,9 +116,9 @@ func currently_playing(w http.ResponseWriter, req *http.Request) {
 	fmt.Println(nowPlaying.Item.Name, "-", artists.String(), nowPlaying.Item.Album.Images[0].URL, nowPlaying.Item.External_URLs.Spotify)
 
 	response, err := json.Marshal(&struct {
-		Name  string `json:"name"`
-		URL   string `json:"url"`
-		Image string `json:"image"`
+		Name  string `json:"name,omitempty"`
+		URL   string `json:"url,omitempty"`
+		Image string `json:"image,omitempty"`
 	}{
 		Name:  nowPlaying.Item.Name + " - " + artists.String(),
 		URL:   nowPlaying.Item.External_URLs.Spotify,
@@ -134,6 +135,7 @@ func currently_playing(w http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
+	SetEnvironmentVariables()
 	fmt.Println("currently-playing")
 	http.HandleFunc("/currently-playing", currently_playing)
 	http.ListenAndServe(":8080", nil)
