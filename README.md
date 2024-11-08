@@ -30,7 +30,8 @@ get the currently playing song from Spotify
 
 - Run `go run .` to start the application
 
-- Running `curl http://localhost:8080/currently-playing` will return if something is playing
+- Running `curl http://localhost:8080/currently-playing` will return JSON if something is playing
+
   ```json
   {
     "name": "Nikamma - Lifafa",
@@ -38,6 +39,10 @@ get the currently playing song from Spotify
     "image": "https://i.scdn.co/image/ab67616d0000b273ccb8f637c8dd7422f4266bfa"
   }
   ```
+
+- Running `curl http://localhost:8080/currently-playing-page` will return HTML if something is playing
+
+  ![Demo Image](demo.png)
 
 ### deploy
 
