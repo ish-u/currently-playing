@@ -44,13 +44,17 @@ void main() {
 `;
 
 let fragmentShaderSource = `#version 300 es
-
 precision highp float;
+
+uniform vec2 u_resolution;
+uniform vec2 u_mouse;
 
 out vec4 outColor;
 
 void main() {
-    outColor = vec4(1, 0, 0.25, 1);
+    // outColor = vec4(fract(gl_FragCoord.xy / 100.0), 0, 1);
+    // outColor = vec4(fract(gl_FragCoord.xy / u_resolution), 0, 1);
+    outColor = vec4(fract((gl_FragCoord.xy - u_mouse) / u_resolution), 0, 1);
 }
 `;
 
@@ -114,6 +118,10 @@ function main() {
     // Attributes - vertex data location in vertex shader
     let positionAttributeLocation = gl.getAttribLocation(program, "a_position");
 
+    // lookup unifrom locations
+    const resolutionLocation = gl.getUniformLocation(program, "u_resolution");
+    const mouseLocation = gl.getUniformLocation(program, "u_mouse");
+
     // Vertex Attribute Array - State
     let vao = gl.createVertexArray();
     gl.bindVertexArray(vao); // bind vao to current context
@@ -145,6 +153,37 @@ function main() {
       offset,
     );
 
+    let mouseX = 0;
+    let mouseY = 0;
+
+    /**
+     * Handle Mouse movement.
+     * @param {MouseEvent} e
+     **/
+    function setMousePostion(e) {
+      const rect = canvas.getBoundingClientRect();
+      mouseX = e.clientX - rect.left;
+      mouseY = rect.height - (e.clientY - rect.top) - 1;
+      drawScene();
+    }
+
+    canvas.addEventListener("mousemove", setMousePostion);
+    canvas.addEventListener(
+      "touchstart",
+      (e) => {
+        e.preventDefault();
+      },
+      { passive: false },
+    );
+    canvas.addEventListener(
+      "touchmove",
+      (e) => {
+        e.preventDefault();
+        setMousePosition(e.touches[0]);
+      },
+      { passive: false },
+    );
+
     drawScene();
 
     // Drawing Scene
@@ -158,6 +197,9 @@ function main() {
       gl.useProgram(program); // use our Web GL Program
 
       gl.bindVertexArray(vao); // bind attributes and buffers
+
+      gl.uniform2f(resolutionLocation, gl.canvas.width, gl.canvas.height);
+      gl.uniform2f(mouseLocation, mouseX, mouseY);
 
       let primitiveType = gl.TRIANGLES;
       let offset = 0;
