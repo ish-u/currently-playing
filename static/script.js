@@ -12,6 +12,7 @@ window.addEventListener("DOMContentLoaded", () => {
     .catch((e) => console.error(e));
 });
 
+// Ref - https://webgl2fundamentals.org/webgl/lessons/webgl-shadertoy.html
 /**
  * @param {HTMLCanvasElement} canvas
  * @returns {boolean}
@@ -46,17 +47,26 @@ void main() {
 let fragmentShaderSource = `#version 300 es
 precision highp float;
 
-uniform vec2 u_resolution;
-uniform vec2 u_mouse;
-uniform float u_time;
+uniform vec3 iResolution;
+uniform vec2 iMouse;
+uniform float iTime;
 
 out vec4 outColor;
 
+void mainImage( out vec4 fragColor, in vec2 fragCoord )
+{
+    // Normalized pixel coordinates (from 0 to 1)
+    vec2 uv = fragCoord/iResolution.xy;
+
+    // Time varying pixel color
+    vec3 col = 0.5 + 0.5*cos(iTime+uv.xyx+vec3(0,2,4));
+
+    // Output to screen
+    fragColor = vec4(col,1.0);
+}
+
 void main() {
-    // outColor = vec4(fract(gl_FragCoord.xy / 100.0), 0, 1);
-    // outColor = vec4(fract(gl_FragCoord.xy / u_resolution), 0, 1);
-    // outColor = vec4(fract((gl_FragCoord.xy - u_mouse) / u_resolution), 0, 1);
-    outColor = vec4(fract((gl_FragCoord.xy - u_mouse) / u_resolution), fract(u_time), 1);
+    mainImage(outColor, gl_FragCoord.xy);
 }
 `;
 
@@ -121,9 +131,9 @@ function main() {
     let positionAttributeLocation = gl.getAttribLocation(program, "a_position");
 
     // lookup unifrom locations
-    const resolutionLocation = gl.getUniformLocation(program, "u_resolution");
-    const mouseLocation = gl.getUniformLocation(program, "u_mouse");
-    const timeLocation = gl.getUniformLocation(program, "u_time");
+    const resolutionLocation = gl.getUniformLocation(program, "iResolution");
+    const mouseLocation = gl.getUniformLocation(program, "iMouse");
+    const timeLocation = gl.getUniformLocation(program, "iTime");
 
     // Vertex Attribute Array - State
     let vao = gl.createVertexArray();
@@ -205,7 +215,12 @@ function main() {
 
       gl.bindVertexArray(vao); // bind attributes and buffers
 
-      gl.uniform2f(resolutionLocation, gl.canvas.width, gl.canvas.height);
+      gl.uniform3f(
+        resolutionLocation,
+        gl.canvas.width,
+        gl.canvas.height,
+        window.devicePixelRatio || 1,
+      );
       gl.uniform2f(mouseLocation, mouseX, mouseY);
       gl.uniform1f(timeLocation, time);
 
