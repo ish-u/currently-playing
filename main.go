@@ -12,6 +12,42 @@ import (
 	"strings"
 )
 
+var nowPlayingTemplate = template.Must(template.New("Currently Playing").Parse(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{{.Name}}</title>
+		<link rel="icon" type="image/x-icon" href="{{.Image}}">
+    </head>
+	<style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    		display: flex;
+    		justify-content: center;
+    		align-items: center;
+    		height: 70vh;
+    		width: 100vw;
+    		padding: 0;
+    		margin: 0;
+    		text-align: center;
+        }
+		a {
+            text-decoration: none;
+			color: black;
+        }
+    </style>
+    <body>
+		<a href="{{.URL}}">
+			<img src="{{.Image}}" alt="{{.Name}} Cover Image" height="320px" width="320px" />
+			<h1>{{.Name}}</h1>
+		</a>
+    </body>
+    </html>
+
+`))
+
 func get_auth_token() (string, error) {
 	v := url.Values{}
 	v.Add("grant_type", "refresh_token")
@@ -212,45 +248,7 @@ func currently_playing_page(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	w.WriteHeader(http.StatusOK)
 
-	htmlContent := `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>{{.Name}}</title>
-		<link rel="icon" type="image/x-icon" href="{{.Image}}">
-    </head>
-	<style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    		display: flex;
-    		justify-content: center;
-    		align-items: center;
-    		height: 70vh;
-    		width: 100vw;
-    		padding: 0;
-    		margin: 0;
-    		text-align: center;
-        }
-		a {
-            text-decoration: none;
-			color: black;
-        }
-    </style>
-    <body>
-		<a href="{{.URL}}">
-			<img src="{{.Image}}" alt="{{.Name}} Cover Image" height="320px" width="320px" />
-			<h1>{{.Name}}</h1>
-		</a>
-    </body>
-    </html>
-    `
-	htmlContentTemplate, err := template.New("Currently Playing").Parse(htmlContent)
-	if err != nil {
-		fmt.Printf("Failed to create HTML template: %v\n", err)
-	}
-	err = htmlContentTemplate.Execute(w, response)
+	err = nowPlayingTemplate.Execute(w, response)
 	if err != nil {
 		fmt.Printf("Failed to fill HTML template: %v\n", err)
 	}
