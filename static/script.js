@@ -107,26 +107,30 @@ function main() {
     let fragmentShader = createShader(
       gl,
       gl.FRAGMENT_SHADER,
-      fragmentShaderSource
+      fragmentShaderSource,
     );
     let program = createProgram(gl, vertexShader, fragmentShader);
-    console.log(program);
 
-    // Attributes
+    // Attributes - vertex data location in vertex shader
     let positionAttributeLocation = gl.getAttribLocation(program, "a_position");
-
-    // Buffers
-    let positionBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-    const positions = [0, 0, 0, 0.5, 0.7, 0];
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
 
     // Vertex Attribute Array - State
     let vao = gl.createVertexArray();
-    gl.bindVertexArray(vao);
+    gl.bindVertexArray(vao); // bind vao to current context
+
+    // Buffer - put three 2d clip space points in
+    let positionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer); // bind it to ARRAY_BUFFER
+
+    // Filling buffer with co-ordinates of two triangle that will fill up the clip space
+    const positions = [-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1];
+
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+
+    // Turn on attribute
     gl.enableVertexAttribArray(positionAttributeLocation);
 
-    // Fetching Data
+    // Fetching Data for the current attribute at location positionAttributeLocation
     let size = 2; // 2 component per iterations
     let type = gl.FLOAT; // the data is 32 bit float
     let normalize = false;
@@ -138,7 +142,7 @@ function main() {
       type,
       normalize,
       stride,
-      offset
+      offset,
     );
 
     drawScene();
@@ -157,7 +161,7 @@ function main() {
 
       let primitiveType = gl.TRIANGLES;
       let offset = 0;
-      let count = 3;
+      let count = 6;
       gl.drawArrays(primitiveType, offset, count);
     }
   }
