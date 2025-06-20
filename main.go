@@ -256,7 +256,7 @@ func currently_playing_page(w http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
-	SetEnvironmentVariables()
+	// SetEnvironmentVariables()
 	fmt.Println("currently-playing")
 	fs := http.FileServer(http.Dir("./static"))
 	http.HandleFunc("/currently-playing", currently_playing)
