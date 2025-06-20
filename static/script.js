@@ -48,13 +48,15 @@ precision highp float;
 
 uniform vec2 u_resolution;
 uniform vec2 u_mouse;
+uniform float u_time;
 
 out vec4 outColor;
 
 void main() {
     // outColor = vec4(fract(gl_FragCoord.xy / 100.0), 0, 1);
     // outColor = vec4(fract(gl_FragCoord.xy / u_resolution), 0, 1);
-    outColor = vec4(fract((gl_FragCoord.xy - u_mouse) / u_resolution), 0, 1);
+    // outColor = vec4(fract((gl_FragCoord.xy - u_mouse) / u_resolution), 0, 1);
+    outColor = vec4(fract((gl_FragCoord.xy - u_mouse) / u_resolution), fract(u_time), 1);
 }
 `;
 
@@ -121,6 +123,7 @@ function main() {
     // lookup unifrom locations
     const resolutionLocation = gl.getUniformLocation(program, "u_resolution");
     const mouseLocation = gl.getUniformLocation(program, "u_mouse");
+    const timeLocation = gl.getUniformLocation(program, "u_time");
 
     // Vertex Attribute Array - State
     let vao = gl.createVertexArray();
@@ -164,7 +167,6 @@ function main() {
       const rect = canvas.getBoundingClientRect();
       mouseX = e.clientX - rect.left;
       mouseY = rect.height - (e.clientY - rect.top) - 1;
-      drawScene();
     }
 
     canvas.addEventListener("mousemove", setMousePostion);
@@ -184,10 +186,15 @@ function main() {
       { passive: false },
     );
 
-    drawScene();
+    requestAnimationFrame(drawScene);
 
-    // Drawing Scene
-    function drawScene() {
+    /**
+     * Render scene.
+     * @param {float} time
+     **/
+    function drawScene(time) {
+      time *= 0.001; // convert to seconds
+
       resizeCanvasToDisplaySize(canvas);
 
       gl.viewport(0, 0, gl.canvas.width, gl.canvas.height); // Map Clip Space -1 to 1 => 0 - canvas width, 0 - canvas height
@@ -200,11 +207,13 @@ function main() {
 
       gl.uniform2f(resolutionLocation, gl.canvas.width, gl.canvas.height);
       gl.uniform2f(mouseLocation, mouseX, mouseY);
+      gl.uniform1f(timeLocation, time);
 
       let primitiveType = gl.TRIANGLES;
       let offset = 0;
       let count = 6;
       gl.drawArrays(primitiveType, offset, count);
+      requestAnimationFrame(drawScene);
     }
   }
 }
