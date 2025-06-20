@@ -258,8 +258,10 @@ func currently_playing_page(w http.ResponseWriter, req *http.Request) {
 func main() {
 	// SetEnvironmentVariables()
 	fmt.Println("currently-playing")
+	fs := http.FileServer(http.Dir("./static"))
 	http.HandleFunc("/currently-playing", currently_playing)
 	http.HandleFunc("/currently-playing-page", currently_playing_page)
+	http.Handle("/", fs)
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
 		fmt.Printf("Error %s", err)
