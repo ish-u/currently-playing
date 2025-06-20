@@ -53,17 +53,38 @@ uniform float iTime;
 
 out vec4 outColor;
 
+   const float PI = 3.14;
+mat2 rotationMatrix(float angle)
+{
+	angle *= PI / 180.0;
+    float s=sin(angle), c=cos(angle);
+    return mat2( c, -s, 
+                 s,  c );
+}
+
+vec3 palette(float t)
+{    
+    vec3 a = vec3(0.049, 0.109, 0.662);
+    vec3 b = vec3(0.408, 0.456 ,0.077);
+    vec3 c = vec3(0.564, 0.367 ,0.556);
+    vec3 d = vec3(2.722, 2.609, 0.063);
+
+    return a + b*cos(3.14*(c*t+d) );
+}
+
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
-    // Normalized pixel coordinates (from 0 to 1)
-    vec2 uv = fragCoord/iResolution.xy;
-
-    // Time varying pixel color
-    vec3 col = 0.5 + 0.5*cos(iTime+uv.xyx+vec3(0,2,4));
-
-    // Output to screen
+    
+    vec2 uv = (2.0*fragCoord - iResolution.xy) / iResolution.y;
+    uv *= rotationMatrix(iTime*25.0);
+    uv = (fract(uv * 2.0) * 3.0) - 1.5;
+    uv *= rotationMatrix(-1.0*iTime*100.0);    
+    float d = (pow(uv.x, 2.) + pow(uv.y, 2.) - uv.y * abs(uv.x));
+    d = exp(sin(d)) + iTime*0.8 + d;
+    vec3 col = smoothstep(0.0,9./iResolution.y,palette(d));
     fragColor = vec4(col,1.0);
-}
+    
+} 
 
 void main() {
     mainImage(outColor, gl_FragCoord.xy);
@@ -118,7 +139,9 @@ function main() {
   /** @type {HTMLCanvasElement | null} */
   const canvas = document.getElementById("canvas");
   if (canvas) {
-    let gl = canvas.getContext("webgl2");
+    let gl = canvas.getContext("webgl2", { antialias: true });
+    canvas.width = canvas.clientWidth * window.devicePixelRatio || 1;
+    canvas.height = canvas.clientHeight * window.devicePixelRatio || 1;
     let vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
     let fragmentShader = createShader(
       gl,
