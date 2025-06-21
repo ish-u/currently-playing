@@ -15,14 +15,35 @@
             height: 100%;
             width: 100%;
             display: block;
+            position: absolute;
+        }
+
+        #next-button {
+            position: absolute;
+            z-index: 1000;
+            height: 50px;
+            width: 50px;
+            right: 0;
+            top: calc(50% - 50px);
+        }
+
+        #prev-button {
+            position: absolute;
+            z-index: 1000;
+            height: 50px;
+            width: 50px;
+            left: 0;
+            top: calc(50% - 50px);
         }
     </style>
 </head>
 
 
 <body>
-    <script src="script.js"></script>
+    <script type="module" src="script.js"></script>
     <canvas id="canvas"></canvas>
+    <button id="prev-button">&larr;</button>
+    <button id="next-button">&rarr;</button>
 </body>
 
 </html>
