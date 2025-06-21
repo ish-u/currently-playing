@@ -12,7 +12,7 @@ let currentShaderIndex = 0;
 let currentProgram;
 
 /** @type {WebGLUniformLocation | null} */
-let resolutionLocation, mouseLocation, timeLocation;
+let resolutionLocation, mouseLocation, timeLocation, paletteLocation;
 
 /** @type {Number} */
 let mouseX,
@@ -20,6 +20,18 @@ let mouseX,
 
 /** @type {string} */
 let currentFragmentShaderSource = SHADERS[0];
+
+/** @type {Array<Number>} */
+let palette = [
+  [0.0, 0.0, 0.0],
+  [0.0, 0.0, 0.0],
+  [0.0, 0.0, 0.0],
+  [0.0, 0.0, 0.0],
+  [0.0, 0.0, 0.0],
+  [0.0, 0.0, 0.0],
+  [0.0, 0.0, 0.0],
+  [0.0, 0.0, 0.0],
+];
 
 const vertexShaderSource = `#version 300 es
 
@@ -129,6 +141,7 @@ function render(time) {
   );
   GL_GLOBAL.uniform2f(mouseLocation, mouseX, mouseY);
   GL_GLOBAL.uniform1f(timeLocation, time);
+  GL_GLOBAL.uniform3fv(paletteLocation, palette.flat());
 
   let primitiveType = GL_GLOBAL.TRIANGLES;
   let offset = 0;
@@ -148,6 +161,7 @@ precision highp float;
 uniform vec3 iResolution;
 uniform vec2 iMouse;
 uniform float iTime;
+uniform vec3 iPalette[8];
 
 out vec4 outColor;
 
@@ -180,6 +194,7 @@ void main() {
   resolutionLocation = gl.getUniformLocation(program, "iResolution");
   mouseLocation = gl.getUniformLocation(program, "iMouse");
   timeLocation = gl.getUniformLocation(program, "iTime");
+  paletteLocation = gl.getUniformLocation(program, "iPalette");
 }
 
 /**
@@ -231,9 +246,61 @@ window.addEventListener("DOMContentLoaded", () => {
       if (favicon) {
         favicon.href = data.image;
       }
+
+      const image = new Image();
+      image.src = data.image;
+      image.crossOrigin = "Anonymous";
+
+      image.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = image.width;
+        canvas.height = image.height;
+        if (ctx) {
+          ctx.drawImage(image, 0, 0, image.width, image.height);
+
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+          const bucket = (v, size = 24) => Math.floor(v / size) * size;
+
+          const colorMap = {};
+
+          for (let i = 0; i < imageData.data.length; i += 4) {
+            const r = bucket(imageData.data[i]);
+            const g = bucket(imageData.data[i + 1]);
+            const b = bucket(imageData.data[i + 2]);
+            const color = `rgb,${r},${g},${b}`;
+            if (colorMap[color]) {
+              colorMap[color] += 1;
+            } else {
+              colorMap[color] = 1;
+            }
+          }
+
+          let colors = [];
+          for (let color in colorMap) {
+            colors.push([color, colorMap[color]]);
+          }
+          colors.sort(function (a, b) {
+            return b[1] - a[1];
+          });
+
+          palette = colors
+            .slice(0, 8)
+            .map((color) => color[0])
+            .map((color) =>
+              color
+                .split(",")
+                .slice(1)
+                .map((color) => parseInt(color) / 255),
+            );
+        }
+      };
+
       main();
       document.getElementById("prev-button")?.addEventListener("click", () => {
-        currentShaderIndex = (currentShaderIndex - 1) % SHADERS.length;
+        currentShaderIndex =
+          (currentShaderIndex - 1 + SHADERS.length) % SHADERS.length;
         changeFragmentShaderSource(SHADERS[currentShaderIndex]);
       });
       document.getElementById("next-button")?.addEventListener("click", () => {
