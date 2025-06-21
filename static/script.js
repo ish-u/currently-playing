@@ -237,7 +237,7 @@ function changeFragmentShaderSource(shader) {
   initShader(GL_GLOBAL);
 }
 
-window.addEventListener("DOMContentLoaded", () => {
+function fetchSongDetails() {
   fetch("/currently-playing")
     .then((res) => res.json())
     .then((data) => {
@@ -297,16 +297,58 @@ window.addEventListener("DOMContentLoaded", () => {
         }
       };
 
-      main();
-      document.getElementById("prev-button")?.addEventListener("click", () => {
+      /** @type {HTMLLinkElement} **/
+      const title = document.getElementById("title");
+      title.innerHTML = data.name;
+      title.href = data.url;
+
+      /** @type {HTMLImageElement} **/
+      const cover = document.getElementById("cover");
+      cover.src = data.image;
+
+      const songCard = document.getElementById("song-card");
+
+      const prevButton = document.getElementById("prev-button");
+      const nextButton = document.getElementById("next-button");
+
+      prevButton?.addEventListener("click", () => {
         currentShaderIndex =
           (currentShaderIndex - 1 + SHADERS.length) % SHADERS.length;
         changeFragmentShaderSource(SHADERS[currentShaderIndex]);
       });
-      document.getElementById("next-button")?.addEventListener("click", () => {
+      nextButton.addEventListener("click", () => {
         currentShaderIndex = (currentShaderIndex + 1) % SHADERS.length;
         changeFragmentShaderSource(SHADERS[currentShaderIndex]);
       });
+
+      let inactivityTimer = null;
+      let isVisible = false;
+
+      function showButtons() {
+        if (!isVisible) {
+          prevButton.classList.add("visible");
+          nextButton.classList.add("visible");
+          songCard.classList.add("visible");
+          isVisible = true;
+        }
+
+        clearTimeout(inactivityTimer);
+        inactivityTimer = setTimeout(() => {
+          prevButton.classList.remove("visible");
+          nextButton.classList.remove("visible");
+          songCard.classList.remove("visible");
+          isVisible = false;
+        }, 2000);
+      }
+
+      window.addEventListener("mousemove", showButtons);
+      window.addEventListener("mousedown", showButtons);
     })
     .catch((e) => console.error(e));
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  fetchSongDetails();
+  setInterval(() => fetchSongDetails(), 5000);
+  main();
 });

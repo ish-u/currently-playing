@@ -8,7 +8,12 @@
             font-family: Arial, Helvetica, sans-serif;
             padding: 0;
             margin: 0;
-            height: 100%;
+        }
+
+        body {
+
+            padding: 0;
+            margin: 0;
         }
 
         #canvas {
@@ -18,22 +23,70 @@
             position: absolute;
         }
 
-        #next-button {
-            position: absolute;
-            z-index: 1000;
-            height: 50px;
-            width: 50px;
-            right: 0;
-            top: calc(50% - 50px);
-        }
-
         #prev-button {
             position: absolute;
             z-index: 1000;
             height: 50px;
             width: 50px;
-            left: 0;
+            left: 10;
             top: calc(50% - 50px);
+            opacity: 0;
+            transition: opacity 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
+            pointer-events: none;
+            border-radius: 100%;
+            background-color: white;
+            color: black;
+            border: 2px solid black;
+            font-size: 16px;
+        }
+
+        #next-button {
+            position: absolute;
+            z-index: 1000;
+            height: 50px;
+            width: 50px;
+            right: 10;
+            top: calc(50% - 50px);
+            opacity: 0;
+            transition: opacity 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
+            pointer-events: none;
+            border-radius: 100%;
+            background-color: white;
+            color: black;
+            border: 2px solid black;
+            font-size: 16px;
+        }
+
+        #song-card.visible,
+        #prev-button.visible,
+        #next-button.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #song-card {
+            position: fixed;
+            z-index: 1000;
+            display: flex;
+            width: 100%;
+            opacity: 0;
+            justify-content: center;
+            align-items: center;
+            column-gap: 1rem;
+            background: rgba(0, 0, 0, 1);
+            transition: opacity 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
+            color: whitesmoke;
+            padding: 8px;
+        }
+
+        #title {
+            text-decoration: none;
+            color: inherit;
+
+        }
+
+        #title:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -44,6 +97,12 @@
     <canvas id="canvas"></canvas>
     <button id="prev-button">&larr;</button>
     <button id="next-button">&rarr;</button>
+    <div id="song-card">
+        <img id="cover" height="64px" width="64px" />
+        <h2>
+            <a id="title" target="_blank"></a>
+        </h2>
+    </div>
 </body>
 
 </html>
